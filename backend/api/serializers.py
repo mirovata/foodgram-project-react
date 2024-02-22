@@ -9,6 +9,7 @@ from users.models import User, UserSubscribe
 
 
 class ReadUserSerializer(djoser.serializers.UserSerializer):
+    """Сериализатор для чтения пользователя."""
 
     is_subscribed = serializers.SerializerMethodField(read_only=True)
 
@@ -77,6 +78,7 @@ class ReadRecipesIngredientsSerializer(serializers.ModelSerializer):
 
 
 class ShoppingCartAndRecipeSerializers(serializers.ModelSerializer):
+    """Сериализатор для чтения краткого списка."""
 
     class Meta:
 
@@ -90,6 +92,7 @@ class ShoppingCartAndRecipeSerializers(serializers.ModelSerializer):
 
 
 class ShoppingCartSerializers(serializers.ModelSerializer):
+    """Сериализатор для создания списка покупок."""
 
     class Meta:
 
@@ -116,6 +119,7 @@ class ShoppingCartSerializers(serializers.ModelSerializer):
 
 
 class FavoriteSerializers(serializers.ModelSerializer):
+    """Сериализатор для создания подписки на рецепт."""
 
     class Meta:
 
@@ -200,26 +204,27 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ('author',)
 
-    def validate_image(self, attrs):
-        if not attrs:
-            raise serializers.ValidationError('Добавьте фото.')
-        return super().validate(attrs)
-
-    def validate_tags(self, attrs):
-        tags = set(attrs)
-        if len(attrs) != len(tags):
-            raise serializers.ValidationError('Одинаковые тэги.')
-        if not attrs:
-            raise serializers.ValidationError('Выберите тэг.')
-        return super().validate(attrs)
-
-    def validate_ingredients(self, attrs):
-        if not attrs:
-            raise serializers.ValidationError('Выберите ингредиент.')
-        return super().validate(attrs)
+    def validate(self, data):
+        ingredients = data.get('ingredients', [])
+        tags = data.get('tags', [])
+        if not (ingredients and tags):
+            raise serializers.ValidationError(
+                'Выберите Тэг или Ингредиент'
+            )
+        if (len(ingredients) != len(set(ingredient['id']
+                                        for ingredient in ingredients)
+                                    )
+           or len(tags) != len(set(tags))):
+            raise serializers.ValidationError(
+                'Тэги или ингредиенты не должны повторяться.'
+            )
+        if any(ingredient.get('amount') == 0 for ingredient in ingredients):
+            raise serializers.ValidationError(
+                'Время готовки должно быть больше 0 минут.'
+            )
+        return super().validate(data)
 
     def create(self, validated_data):
-        """ Создание рецепта """
 
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
@@ -233,17 +238,22 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         return recipe
 
     def update(self, recipe, validated_data):
-        """ Обновление рецепта """
 
         tags = validated_data.pop('tags')
         ingredients = validated_data.pop('ingredients')
-        recipe.tags.set(tags)
-        for ingredient in ingredients:
-            RecipeIngredient.objects.filter(recipes=recipe).delete()
-            RecipeIngredient.objects.create(
-                recipes=recipe,
-                amount=ingredient['amount'],
-                ingredients=ingredient.get('id'), )
+        if tags:
+            recipe.tags.clear()
+            recipe.tags.set(tags)
+        if ingredients:
+            for ingredient in ingredients:
+                RecipeIngredient.objects.filter(
+                    recipes=recipe
+                ).delete()
+                RecipeIngredient.objects.create(
+                   recipes=recipe,
+                   amount=ingredient['amount'],
+                   ingredients=ingredient.get('id'),
+                )
         return recipe
 
     def to_representation(self, instance):
@@ -295,6 +305,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class CreateFollowSerializer(serializers.ModelSerializer):
+    """Сериализатор для создания подписки на пользователя."""
 
     class Meta:
 

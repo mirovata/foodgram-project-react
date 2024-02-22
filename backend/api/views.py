@@ -14,14 +14,16 @@ from api.serializers import (CreateFollowSerializer, CreateRecipeSerializer,
                              FavoriteSerializers, IngredientsSerializer,
                              ReadRecipeSerializer,
                              ReadRecipesIngredientsSerializer,
+                             ReadUserSerializer,
                              ShoppingCartSerializers, TagSerializer,
                              UserSerializer)
 from users.models import User, UserSubscribe
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                             Shopping_Cart, Tag)
-
+from djoser.views import UserViewSet
 
 class RecipesViewSet(viewsets.ModelViewSet):
+    """ViewSet для работы с рецептами."""
 
     queryset = Recipe.objects.all()
     filter_backends = (DjangoFilterBackend,)
@@ -30,6 +32,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
         IsAuthorOrReadOnlyPermission,
     )
     filterset_class = RecipeFilter
+    pagination_class = CustomPagination
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -63,7 +66,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
     def destroy_shopping_cart(self, request, pk):
         shopping_cart = Shopping_Cart.objects.filter(
             author=request.user.id,
-            recipe=pk
+            recipe=get_object_or_404(Recipe, id=pk)
         )
         if shopping_cart.exists():
             shopping_cart.delete()
@@ -111,7 +114,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
     def destroy_favorite(self, request, pk):
         favorite = Favorite.objects.filter(
             author=request.user.id,
-            recipe=pk)
+            recipe=get_object_or_404(Recipe, id=pk))
         if favorite.exists():
             favorite.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
@@ -123,6 +126,7 @@ class TagViewSet(
     mixins.RetrieveModelMixin,
     viewsets.GenericViewSet
 ):
+    """ViewSet для работы с тэгами."""
 
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
@@ -135,6 +139,7 @@ class IngredientsViewSet(
     mixins.RetrieveModelMixin,
     viewsets.GenericViewSet
 ):
+    """ViewSet для работы с ингредиентами."""
 
     queryset = Ingredient.objects.all()
     serializer_class = IngredientsSerializer
@@ -144,9 +149,25 @@ class IngredientsViewSet(
     pagination_class = None
 
 
-class UserViewSet(viewsets.GenericViewSet):
-
+class UserViewSet(UserViewSet):
+    """ViewSet для работы с пользователями."""
+    queryset = User.objects.all()
     pagination_class = CustomPagination
+
+    @action(
+        detail=False,
+        methods=['GET'],
+        url_path='me',
+        url_name='me',
+        permission_classes=(IsAuthenticated,)
+    )
+    def me(self, request):
+        user = get_object_or_404(User, id=self.request.user.id)
+        serializer = ReadUserSerializer(
+            user,
+            context={'request': request}
+        )
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(
         detail=True,
@@ -155,10 +176,10 @@ class UserViewSet(viewsets.GenericViewSet):
         url_path='subscribe',
         permission_classes=(IsAuthenticated,)
     )
-    def subscribe(self, request, pk):
+    def subscribe(self, request, id):
 
         context = {'request': request}
-        usersubscribe = get_object_or_404(User, id=pk)
+        usersubscribe = get_object_or_404(User, id=id)
         data = {
             'author': usersubscribe.id,
             'follower': request.user.id
@@ -169,9 +190,9 @@ class UserViewSet(viewsets.GenericViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     @subscribe.mapping.delete
-    def destroy_subscribe(self, request, pk):
+    def destroy_subscribe(self, request, id):
         subscribe = UserSubscribe.objects.filter(
-            author_id=pk,
+            author_id=get_object_or_404(User, id=id),
             follower=request.user.id
         )
         if subscribe.exists():

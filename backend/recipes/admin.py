@@ -12,6 +12,7 @@ class RecipesAdmin(admin.ModelAdmin):
     list_display = (
         'author',
         'name',
+        'get_favorite',
         'image',
         'cooking_time'
       )
@@ -20,6 +21,11 @@ class RecipesAdmin(admin.ModelAdmin):
         'author',
         'tags'
     )
+
+    @admin.display(description='Добавили в избранное')
+    def get_favorite(self, obj):
+        print(obj.author.id)
+        return models.Favorite.objects.filter(recipe=obj.id).count()
 
 
 @admin.register(models.Tag)
