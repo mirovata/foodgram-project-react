@@ -19,10 +19,11 @@ class ShoppingCartDataRenderer(renderers.BaseRenderer):
 
         for (name, measurement_unit), amount in unique_data.items():
             text_buffer.write(
-                '• {name} ({measurement_unit}) - {amount}\n'.format(
-                   name=name,
-                   measurement_unit=measurement_unit,
-                   amount=amount
+                '• {name} ({measurement_unit}) - {amount}\n'.
+                format(
+                    name=name,
+                    measurement_unit=measurement_unit,
+                    amount=amount
                 ))
 
         return text_buffer.getvalue()

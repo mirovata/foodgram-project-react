@@ -251,9 +251,9 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
                     recipes=recipe
                 ).delete()
                 RecipeIngredient.objects.create(
-                   recipes=recipe,
-                   amount=ingredient['amount'],
-                   ingredients=ingredient.get('id'),
+                    recipes=recipe,
+                    amount=ingredient['amount'],
+                    ingredients=ingredient.get('id'),
                 )
         return recipe
 
@@ -300,8 +300,8 @@ class UserSerializer(serializers.ModelSerializer):
         if limit:
             recipes = recipes[: int(limit)]
         serializer = ShoppingCartAndRecipeSerializers(
-                recipes, many=True, read_only=True
-            )
+            recipes, many=True, read_only=True
+        )
         return serializer.data
 
 

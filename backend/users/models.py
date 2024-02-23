@@ -9,9 +9,9 @@ class User(AbstractUser):
     """Пользовательская модель."""
 
     email = models.EmailField(
-      max_length=LENGTH_EMAIL,
-      unique=True,
-      verbose_name='Почта'
+        max_length=LENGTH_EMAIL,
+        unique=True,
+        verbose_name='Почта'
     )
     username = models.CharField(
         max_length=LENGTH,
