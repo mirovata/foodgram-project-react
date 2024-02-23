@@ -17,10 +17,10 @@ from api.serializers import (CreateFollowSerializer, CreateRecipeSerializer,
                              ReadUserSerializer,
                              ShoppingCartSerializers, TagSerializer,
                              UserSerializer)
+from djoser.views import UserViewSet
 from users.models import User, UserSubscribe
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                             Shopping_Cart, Tag)
-from djoser.views import UserViewSet
 
 
 class RecipesViewSet(viewsets.ModelViewSet):
