@@ -3,7 +3,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import (AllowAny, IsAuthenticated,
-                                        IsAuthenticatedOrReadOnly)
+                                        SAFE_METHODS)
 from rest_framework.response import Response
 
 from api.paginations import CustomPagination
@@ -22,15 +22,13 @@ from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                             Shopping_Cart, Tag)
 from djoser.views import UserViewSet
 
+
 class RecipesViewSet(viewsets.ModelViewSet):
     """ViewSet для работы с рецептами."""
 
     queryset = Recipe.objects.all()
+    permission_classes = (IsAuthorOrReadOnlyPermission,)
     filter_backends = (DjangoFilterBackend,)
-    permission_classes = (
-        IsAuthenticatedOrReadOnly,
-        IsAuthorOrReadOnlyPermission,
-    )
     filterset_class = RecipeFilter
     pagination_class = CustomPagination
 
@@ -38,16 +36,13 @@ class RecipesViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user)
 
     def get_serializer_class(self):
-        if self.request.method in ['POST', 'PATCH']:
-            return CreateRecipeSerializer
-        if self.request.method == 'GET':
+        if self.request.method in SAFE_METHODS:
             return ReadRecipeSerializer
+        return CreateRecipeSerializer
 
     @action(
         detail=True,
         methods=['POST'],
-        url_name='shopping_cart',
-        url_path='shopping_cart',
         permission_classes=(IsAuthenticated,)
     )
     def shopping_cart(self, request, pk):
@@ -76,7 +71,6 @@ class RecipesViewSet(viewsets.ModelViewSet):
     @action(
         detail=False,
         methods=['GET'],
-        url_name='download_shopping_cart',
         renderer_classes=(ShoppingCartDataRenderer,)
     )
     def download_shopping_cart(self, request):
@@ -94,8 +88,6 @@ class RecipesViewSet(viewsets.ModelViewSet):
     @action(
         detail=True,
         methods=['POST'],
-        url_name='favorite',
-        url_path='favorite',
         permission_classes=(IsAuthenticated,)
     )
     def favorite(self, request, pk):
@@ -152,6 +144,7 @@ class IngredientsViewSet(
 class UserViewSet(UserViewSet):
     """ViewSet для работы с пользователями."""
     queryset = User.objects.all()
+    serializer_class = ReadUserSerializer
     pagination_class = CustomPagination
 
     @action(
