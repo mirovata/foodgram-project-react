@@ -1,15 +1,9 @@
 from colorfield.fields import ColorField
+from core.basemodel import BaseModel
+from core.constants import (LENGTH_FOR_MEASUREMENT_UNIT, LENGTH_FOR_NAME,
+                            MAX_VALUE, MIN_VALUE, ROW_LIMIT_TO)
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
-
-from core.basemodel import BaseModel
-from core.constants import (
-    LENGTH_FOR_NAME,
-    LENGTH_FOR_MEASUREMENT_UNIT,
-    MAX_VALUE,
-    MIN_VALUE,
-    ROW_LIMIT_TO
-)
 from users.models import User
 
 

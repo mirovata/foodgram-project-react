@@ -15,7 +15,7 @@ class RecipesAdmin(admin.ModelAdmin):
         'get_favorite',
         'image',
         'cooking_time'
-      )
+    )
     list_filter = (
         'name',
         'author',
