@@ -23,7 +23,7 @@ jobs:
 
   build_frontend_and_push_to_docker_hub:
 
-    if: github.ref_name == 'main'
+    if: github.ref_name == 'master'
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
@@ -44,7 +44,7 @@ jobs:
 
   build_and_push_to_docker_hub:
     
-    if: github.ref_name == 'main'
+    if: github.ref_name == 'master'
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
@@ -65,7 +65,7 @@ jobs:
 
   deploy:
     
-    if: github.ref_name == 'main'
+    if: github.ref_name == 'master'
     runs-on: ubuntu-latest
     needs: 
       - build_and_push_to_docker_hub
