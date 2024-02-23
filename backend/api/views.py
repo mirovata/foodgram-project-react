@@ -1,26 +1,24 @@
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
+from djoser.views import UserViewSet
+from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
+                            Shopping_Cart, Tag)
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import (AllowAny, IsAuthenticated,
-                                        SAFE_METHODS)
+from rest_framework.permissions import SAFE_METHODS, AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from users.models import User, UserSubscribe
 
-from api.paginations import CustomPagination
 from api.filters import RecipeFilter, SearchIngredientsFilter
+from api.paginations import CustomPagination
 from api.permissions import IsAuthorOrReadOnlyPermission
 from api.renders import ShoppingCartDataRenderer
 from api.serializers import (CreateFollowSerializer, CreateRecipeSerializer,
                              FavoriteSerializers, IngredientsSerializer,
                              ReadRecipeSerializer,
                              ReadRecipesIngredientsSerializer,
-                             ReadUserSerializer,
-                             ShoppingCartSerializers, TagSerializer,
-                             UserSerializer)
-from djoser.views import UserViewSet
-from users.models import User, UserSubscribe
-from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
-                            Shopping_Cart, Tag)
+                             ReadUserSerializer, ShoppingCartSerializers,
+                             TagSerializer, UserSerializer)
 
 
 class RecipesViewSet(viewsets.ModelViewSet):
