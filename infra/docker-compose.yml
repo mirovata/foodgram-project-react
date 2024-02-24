@@ -9,13 +9,13 @@ services:
 
   db:
     image: postgres:13
-    env_file: ./.env
+    env_file: ../.env
     volumes:
       - pg_data:/var/lib/postgresql/data
 
   backend:
-    build: mirovata/foodgram_backend
-    env_file: .env
+    image: mirovata/foodgram_backend
+    env_file: ../.env
     volumes:
       - static:/app/static/
       - media:/app/media/
@@ -29,9 +29,9 @@ services:
   
   nginx:
     image: nginx:1.19.3
-    env_file: ./.env
+    env_file: ../.env
     ports:
-      - 80:80
+      - 8000:80
     depends_on:
       - backend
       - frontend
