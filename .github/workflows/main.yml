@@ -92,11 +92,7 @@ jobs:
           sudo docker compose -f docker-compose.production.yml exec backend python manage.py csv_import
           sudo docker compose -f docker-compose.production.yml exec backend python manage.py collectstatic
           sudo docker compose -f docker-compose.production.yml exec backend cp -r /app/collected_static/. /app/static/
-<<<<<<< HEAD
 
-=======
-  
->>>>>>> a15b1ece (ffff)
   send_message:
     runs-on: ubuntu-latest
     needs: deploy
