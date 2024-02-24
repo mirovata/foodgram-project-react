@@ -19,7 +19,7 @@ jobs:
         pip install -r ./backend/requirements.txt 
     - name: Test with flake8
       run: |
-        python -m flake8 backend
+        python -m flake8
 
   build_and_push_to_docker_hub:
     
@@ -62,7 +62,7 @@ jobs:
       - name: Push to DockerHub
         uses: docker/build-push-action@v2
         with:
-          context: frontend/
+          context: ./frontend
           push: true
           tags: ${{ secrets.NICKNAME }}/foodgram_frontend:latest
 
@@ -92,7 +92,11 @@ jobs:
           sudo docker compose -f docker-compose.production.yml exec backend python manage.py csv_import
           sudo docker compose -f docker-compose.production.yml exec backend python manage.py collectstatic
           sudo docker compose -f docker-compose.production.yml exec backend cp -r /app/collected_static/. /app/static/
+<<<<<<< HEAD
 
+=======
+  
+>>>>>>> a15b1ece (ffff)
   send_message:
     runs-on: ubuntu-latest
     needs: deploy
