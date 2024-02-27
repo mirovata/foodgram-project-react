@@ -15,7 +15,7 @@ class Command(BaseCommand):
     help = 'Загружает данные из csv в базу'
 
     def handle(self, *args, **options):
-        print('Идет заполнение базы данных:')
+        self.stdout.write('Идет заполнение базы данных:')
 
         for model, csv_file in models.items():
             with open('data/' + csv_file, encoding='utf-8-sig') as file:
