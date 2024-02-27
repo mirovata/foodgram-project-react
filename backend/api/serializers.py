@@ -3,6 +3,7 @@ from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
+from core.constants import MIN_VALUE, MAX_VALUE
 from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                             Shopping_Cart, Tag)
 from users.models import User, UserSubscribe
@@ -49,7 +50,7 @@ class CreateRecipesIngredientsSerializer(serializers.ModelSerializer):
         queryset=Ingredient.objects.all(),
     )
     amount = serializers.IntegerField(
-        min_value=1, max_value=99999,
+        min_value=MIN_VALUE, max_value=MAX_VALUE,
         error_messages={
             'min_value': 'Минимальное количество ингредиентов 1',
             'max_value': 'Максимальное количество ингредиентов 99999',
@@ -196,7 +197,7 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         many=True,
     )
     cooking_time = serializers.IntegerField(
-        min_value=1, max_value=99999,
+        min_value=MIN_VALUE, max_valueMAX_VALUE,
         error_messages={
             'min_value': 'Минимальное время готовки 1 минута.',
             'max_value': 'Максимальное время готовки 99999 минут.',
