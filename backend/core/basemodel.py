@@ -3,10 +3,12 @@ from django.db import models
 from users.models import User
 
 
-class BaseModel(models.Model):
-    """
-    Абстрактная модель.
-    Добавляет к модели автора и рецепт.
+class AuthorRecipeModel(models.Model):
+    """Абстрактная модель.
+
+    Attributes:
+        author (ForeignKey):Поле, содержащие pk автора.
+        recipe (ForeignKey):Поле, содержащие pk рецепта.
     """
 
     author = models.ForeignKey(

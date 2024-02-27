@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import Group
 from rest_framework.authtoken.models import TokenProxy
 
@@ -6,12 +7,12 @@ from users.models import User, UserSubscribe
 
 
 @admin.register(User)
-class UserAdmin(admin.ModelAdmin):
+class UserAdmin(BaseUserAdmin):
 
     list_display = (
         'email',
         'first_name',
-        'last_name'
+        'last_name',
     )
     list_filter = ('email', 'first_name')
 

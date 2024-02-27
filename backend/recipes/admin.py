@@ -6,6 +6,12 @@ from recipes import models
 admin.site.site_header = 'Foodgram'
 
 
+class IngredientInline(admin.TabularInline):
+
+    model = models.RecipeIngredient
+    extra = 1
+
+
 @admin.register(models.Recipe)
 class RecipesAdmin(admin.ModelAdmin):
 
@@ -22,10 +28,13 @@ class RecipesAdmin(admin.ModelAdmin):
         'tags'
     )
 
+    inlines = [
+        IngredientInline,
+    ]
+
     @admin.display(description='Добавили в избранное')
     def get_favorite(self, obj):
-        print(obj.author.id)
-        return models.Favorite.objects.filter(recipe=obj.id).count()
+        return obj.favorites.count()
 
 
 @admin.register(models.Tag)

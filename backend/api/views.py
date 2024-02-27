@@ -1,24 +1,25 @@
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
-from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
-                            Shopping_Cart, Tag)
-from rest_framework import mixins, status, viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import SAFE_METHODS, AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from users.models import User, UserSubscribe
 
 from api.filters import RecipeFilter, SearchIngredientsFilter
-from api.paginations import CustomPagination
+from api.paginations import PageNumberAndLimitPagination
 from api.permissions import IsAuthorOrReadOnlyPermission
 from api.renders import ShoppingCartDataRenderer
 from api.serializers import (CreateFollowSerializer, CreateRecipeSerializer,
                              FavoriteSerializers, IngredientsSerializer,
                              ReadRecipeSerializer,
                              ReadRecipesIngredientsSerializer,
-                             ReadUserSerializer, ShoppingCartSerializers,
-                             TagSerializer, UserSerializer)
+                             ReadUserSerializer,
+                             ShoppingCartSerializers, SubscribtionsSerializer,
+                             TagSerializer, )
+from recipes.models import (Favorite, Ingredient, Recipe, RecipeIngredient,
+                            Shopping_Cart, Tag)
+from users.models import User, UserSubscribe
 
 
 class RecipesViewSet(viewsets.ModelViewSet):
@@ -28,15 +29,34 @@ class RecipesViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthorOrReadOnlyPermission,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
-    pagination_class = CustomPagination
-
-    def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+    pagination_class = PageNumberAndLimitPagination
 
     def get_serializer_class(self):
         if self.request.method in SAFE_METHODS:
             return ReadRecipeSerializer
         return CreateRecipeSerializer
+
+    def create_favorite_or_shopping_cart(self, request,
+                                         pk, serializer_class):
+        context = {'request': request}
+        recipe = get_object_or_404(Recipe, id=pk)
+        data = {
+            'author': request.user.id,
+            'recipe': recipe.id
+        }
+        serializer = serializer_class(data=data, context=context)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def destroy_favorite_or_shopping_cart(self, request, pk, model):
+        model = model.objects.filter(
+            author=request.user.id,
+            recipe=get_object_or_404(Recipe, id=pk))
+        if model.exists():
+            model.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
     @action(
         detail=True,
@@ -44,27 +64,13 @@ class RecipesViewSet(viewsets.ModelViewSet):
         permission_classes=(IsAuthenticated,)
     )
     def shopping_cart(self, request, pk):
-        context = {'request': request}
-        recipe = get_object_or_404(Recipe, id=pk)
-        data = {
-            'author': request.user.id,
-            'recipe': recipe.id
-        }
-        serializer = ShoppingCartSerializers(data=data, context=context)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return self.create_favorite_or_shopping_cart(request, pk,
+                                                     ShoppingCartSerializers)
 
     @shopping_cart.mapping.delete
     def destroy_shopping_cart(self, request, pk):
-        shopping_cart = Shopping_Cart.objects.filter(
-            author=request.user.id,
-            recipe=get_object_or_404(Recipe, id=pk)
-        )
-        if shopping_cart.exists():
-            shopping_cart.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        return self.destroy_favorite_or_shopping_cart(request, pk,
+                                                      Shopping_Cart)
 
     @action(
         detail=False,
@@ -89,33 +95,15 @@ class RecipesViewSet(viewsets.ModelViewSet):
         permission_classes=(IsAuthenticated,)
     )
     def favorite(self, request, pk):
-        context = {'request': request}
-        recipe = get_object_or_404(Recipe, id=pk)
-        data = {
-            'author': request.user.id,
-            'recipe': recipe.id
-        }
-        serializer = FavoriteSerializers(data=data, context=context)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return self.create_favorite_or_shopping_cart(request, pk,
+                                                     FavoriteSerializers)
 
     @favorite.mapping.delete
     def destroy_favorite(self, request, pk):
-        favorite = Favorite.objects.filter(
-            author=request.user.id,
-            recipe=get_object_or_404(Recipe, id=pk))
-        if favorite.exists():
-            favorite.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        return self.destroy_favorite_or_shopping_cart(request, pk, Favorite)
 
 
-class TagViewSet(
-    mixins.ListModelMixin,
-    mixins.RetrieveModelMixin,
-    viewsets.GenericViewSet
-):
+class TagViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet для работы с тэгами."""
 
     queryset = Tag.objects.all()
@@ -124,11 +112,7 @@ class TagViewSet(
     pagination_class = None
 
 
-class IngredientsViewSet(
-    mixins.ListModelMixin,
-    mixins.RetrieveModelMixin,
-    viewsets.GenericViewSet
-):
+class IngredientsViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet для работы с ингредиентами."""
 
     queryset = Ingredient.objects.all()
@@ -143,7 +127,7 @@ class UserViewSet(UserViewSet):
     """ViewSet для работы с пользователями."""
     queryset = User.objects.all()
     serializer_class = ReadUserSerializer
-    pagination_class = CustomPagination
+    pagination_class = PageNumberAndLimitPagination
 
     @action(
         detail=False,
@@ -203,7 +187,7 @@ class UserViewSet(UserViewSet):
             following__follower=self.request.user.id
         )
         pages = self.paginate_queryset(queryset)
-        serializer = UserSerializer(
+        serializer = SubscribtionsSerializer(
             pages, many=True, context={'request': request}
         )
         return self.get_paginated_response(serializer.data)

@@ -1,7 +1,9 @@
 from rest_framework.pagination import PageNumberPagination
 
+from core.constants import PAGE_PARAM, PAGE_SIZE
 
-class CustomPagination(PageNumberPagination):
 
-    page_size = 6
-    page_size_query_param = 'limit'
+class PageNumberAndLimitPagination(PageNumberPagination):
+
+    page_size = PAGE_SIZE
+    page_size_query_param = PAGE_PARAM

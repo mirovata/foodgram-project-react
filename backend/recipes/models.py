@@ -1,9 +1,10 @@
 from colorfield.fields import ColorField
-from core.basemodel import BaseModel
+from django.db import models
+
+from core.basemodel import AuthorRecipeModel
 from core.constants import (LENGTH_FOR_MEASUREMENT_UNIT, LENGTH_FOR_NAME,
                             MAX_VALUE, MIN_VALUE, ROW_LIMIT_TO)
 from django.core.validators import MaxValueValidator, MinValueValidator
-from django.db import models
 from users.models import User
 
 
@@ -20,12 +21,15 @@ class Ingredient(models.Model):
     )
 
     class Meta:
-
+        constraints = (
+            models.UniqueConstraint(fields=('name', 'measurement_unit',),
+                                    name='unique_ingredient'),
+        )
+        ordering = ['name']
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'
 
     def __str__(self):
-
         return self.name[:ROW_LIMIT_TO]
 
 
@@ -38,19 +42,19 @@ class Tag(models.Model):
     )
     color = ColorField(
         format='hex',
-        verbose_name='Цвет')
+        verbose_name='Цвет'
+    )
     slug = models.SlugField(
         unique=True,
         verbose_name='Идентификатор'
     )
 
     class Meta:
-
+        ordering = ['name']
         verbose_name = 'Тэг'
         verbose_name_plural = 'Тэги'
 
     def __str__(self):
-
         return self.name[:ROW_LIMIT_TO]
 
 
@@ -65,6 +69,7 @@ class Recipe(models.Model):
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
+        related_name='recipes',
         verbose_name='Автор'
     )
     image = models.ImageField(
@@ -88,11 +93,11 @@ class Recipe(models.Model):
         verbose_name='Время готовки',
         validators=[
             MinValueValidator(
-                MIN_VALUE, message=(f'Убедитесь, что введенное '
+                MIN_VALUE, message=('Убедитесь, что введенное '
                                     f'число больше или равно {MIN_VALUE}')
             ),
             MaxValueValidator(
-                MAX_VALUE, message=(f'Убедитесь, что введенное '
+                MAX_VALUE, message=('Убедитесь, что введенное '
                                     f'число меньше или равно {MAX_VALUE}')
             )
         ],
@@ -103,13 +108,11 @@ class Recipe(models.Model):
     )
 
     class Meta:
-
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
         ordering = ['-pub_date']
 
     def __str__(self):
-
         return self.name[:ROW_LIMIT_TO]
 
 
@@ -130,25 +133,35 @@ class RecipeIngredient(models.Model):
         verbose_name='Количество',
         validators=[
             MinValueValidator(
-                MIN_VALUE, message=(f'Убедитесь, что введенное '
+                MIN_VALUE, message=('Убедитесь, что введенное '
                                     f'число больше или равно {MIN_VALUE}')
             ),
             MaxValueValidator(
-                MAX_VALUE, message=(f'Убедитесь, что введенное '
+                MAX_VALUE, message=('Убедитесь, что введенное '
                                     f'число меньше или равно {MAX_VALUE}')
             )
         ],
     )
 
+    class Meta:
+        constraints = (
+            models.UniqueConstraint(fields=('recipes', 'ingredients',),
+                                    name='unique_recipe_with_ingredients'),
+        )
+        ordering = ['recipes']
+        verbose_name = 'Игредиент'
+        verbose_name_plural = 'Количество ингридиентов'
+
     def __str__(self):
         return f'{self.recipes} ингредиенты: {self.ingredients}'
 
 
-class Shopping_Cart(BaseModel):
+class Shopping_Cart(AuthorRecipeModel):
     """Модель для добавления рецепта в список покупок."""
 
     class Meta:
-
+        default_related_name = 'shopping_list'
+        ordering = ['recipe']
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Списки покупок'
 
@@ -156,10 +169,14 @@ class Shopping_Cart(BaseModel):
         return f'{self.author} : {self.recipe}'
 
 
-class Favorite(BaseModel):
+class Favorite(AuthorRecipeModel):
     """Модель для добавления рецепта в избранное."""
 
     class Meta:
-
+        default_related_name = 'favorites'
+        ordering = ['recipe']
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранные'
+
+    def __str__(self):
+        return f'{self.author} : {self.recipe}'

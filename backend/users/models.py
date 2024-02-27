@@ -17,7 +17,7 @@ class User(AbstractUser):
         max_length=LENGTH,
         unique=True,
         validators=[
-            RegexValidator(regex=r'^[\ \w.@+-]+$')
+            RegexValidator(regex=r'^(?!me$)[\ \w.@+-]+$')
         ],
         verbose_name='Логин'
     )
@@ -46,6 +46,12 @@ class User(AbstractUser):
 
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
+        ordering = ['username']
+
+    def __str__(self):
+        return '{username}'.format(
+            username=self.username,
+        )
 
 
 class UserSubscribe(models.Model):
