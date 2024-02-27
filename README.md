@@ -68,7 +68,7 @@ docker compose exec backend python manage.py csv_import
 ## Примеры запросов и ответов
 
 `POST` Запрос на адрес ```http://127.0.0.1:8000/api/recipes/```
-
+```
 {
   "ingredients": [
     {
@@ -85,9 +85,11 @@ docker compose exec backend python manage.py csv_import
   "text": "string",
   "cooking_time": 1
 }
+```
 
 `GET` запрос на адрес ```http://127.0.0.1:8000/api/recipes/``` возращает:
 
+```
 {
   "count": 123,
   "next": "http://foodgram.example.org/api/recipes/?page=4",
@@ -128,6 +130,7 @@ docker compose exec backend python manage.py csv_import
     }
   ]
 }
+```
 
 ## Автор
 
