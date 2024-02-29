@@ -8,6 +8,14 @@
 
 [![2024-02-27-083251.png](https://i.postimg.cc/L6GL1Sbr/2024-02-27-083251.png)](https://postimg.cc/ZCFCGGZc)
 
+## Проект доступен по ссылкам
+
+```
+https://foodgram-mirovata.zapto.org/
+https://foodgram-mirovata.zapto.org/admin/
+https://foodgram-mirovata.zapto.org/api/docs/
+```
+
 ## Технологии
 - Docker
 - Django

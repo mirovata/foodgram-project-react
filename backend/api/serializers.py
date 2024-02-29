@@ -52,8 +52,8 @@ class CreateRecipesIngredientsSerializer(serializers.ModelSerializer):
     amount = serializers.IntegerField(
         min_value=MIN_VALUE, max_value=MAX_VALUE,
         error_messages={
-            'min_value': 'Минимальное количество ингредиентов 1',
-            'max_value': 'Максимальное количество ингредиентов 99999',
+            'min_value': f'Минимальное количество ингредиентов {MIN_VALUE}',
+            'max_value': f'Максимальное количество ингредиентов {MAX_VALUE}',
         }
     )
 
@@ -199,8 +199,8 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
     cooking_time = serializers.IntegerField(
         min_value=MIN_VALUE, max_value=MAX_VALUE,
         error_messages={
-            'min_value': 'Минимальное время готовки 1 минута.',
-            'max_value': 'Максимальное время готовки 99999 минут.',
+            'min_value': f'Минимальное время готовки {MIN_VALUE} минута.',
+            'max_value': f'Максимальное время готовки {MAX_VALUE} минут.',
         }
     )
     author = ReadUserSerializer(read_only=True)
@@ -288,10 +288,9 @@ class SubscribtionsSerializer(serializers.ModelSerializer):
     def get_recipes(self, obj):
         request = self.context.get('request')
         limit = request.GET.get('recipes_limit')
-        print(obj.recipes.all())
         recipes = obj.recipes.all()
         if limit is not None and limit.isdigit():
-            recipes = recipes[: int(limit)]
+            recipes = recipes[:int(limit)]
         serializer = ShoppingCartAndRecipeSerializers(
             recipes, many=True, read_only=True, context={'request': request}
         )

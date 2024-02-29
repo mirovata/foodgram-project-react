@@ -3,7 +3,9 @@ from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import SAFE_METHODS, AllowAny, IsAuthenticated
+from rest_framework.permissions import (SAFE_METHODS, AllowAny,
+                                        IsAuthenticated,
+                                        IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 
 from api.filters import RecipeFilter, SearchIngredientsFilter
@@ -26,7 +28,10 @@ class RecipesViewSet(viewsets.ModelViewSet):
     """ViewSet для работы с рецептами."""
 
     queryset = Recipe.objects.all()
-    permission_classes = (IsAuthorOrReadOnlyPermission,)
+    permission_classes = (
+        IsAuthorOrReadOnlyPermission,
+        IsAuthenticatedOrReadOnly
+    )
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
     pagination_class = PageNumberAndLimitPagination
@@ -79,7 +84,7 @@ class RecipesViewSet(viewsets.ModelViewSet):
     )
     def download_shopping_cart(self, request):
         queryset = RecipeIngredient.objects.filter(
-            recipes__shopping_cart__author=request.user.id
+            recipes__shopping_list__author=request.user.id
         )
         file_name = f'Shopping List.{request.accepted_renderer.format}'
         serializer = ReadRecipesIngredientsSerializer(queryset, many=True)
@@ -108,7 +113,7 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
-    permission_classes = [AllowAny, ]
+    permission_classes = [AllowAny,]
     pagination_class = None
 
 
@@ -117,7 +122,7 @@ class IngredientsViewSet(viewsets.ReadOnlyModelViewSet):
 
     queryset = Ingredient.objects.all()
     serializer_class = IngredientsSerializer
-    permission_classes = [AllowAny, ]
+    permission_classes = [AllowAny,]
     filter_backends = (DjangoFilterBackend,)
     filterset_class = SearchIngredientsFilter
     pagination_class = None

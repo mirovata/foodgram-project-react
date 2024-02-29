@@ -9,6 +9,7 @@ admin.site.site_header = 'Foodgram'
 class IngredientInline(admin.TabularInline):
 
     model = models.RecipeIngredient
+    min_num = 1
     extra = 1
 
 

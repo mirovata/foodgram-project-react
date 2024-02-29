@@ -1,10 +1,10 @@
 from colorfield.fields import ColorField
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from core.basemodel import AuthorRecipeModel
 from core.constants import (LENGTH_FOR_MEASUREMENT_UNIT, LENGTH_FOR_NAME,
                             MAX_VALUE, MIN_VALUE, ROW_LIMIT_TO)
-from django.core.validators import MaxValueValidator, MinValueValidator
 from users.models import User
 
 
@@ -42,6 +42,7 @@ class Tag(models.Model):
     )
     color = ColorField(
         format='hex',
+        unique=True,
         verbose_name='Цвет'
     )
     slug = models.SlugField(
@@ -161,12 +162,8 @@ class Shopping_Cart(AuthorRecipeModel):
 
     class Meta:
         default_related_name = 'shopping_list'
-        ordering = ['recipe']
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Списки покупок'
-
-    def __str__(self):
-        return f'{self.author} : {self.recipe}'
 
 
 class Favorite(AuthorRecipeModel):
@@ -174,9 +171,5 @@ class Favorite(AuthorRecipeModel):
 
     class Meta:
         default_related_name = 'favorites'
-        ordering = ['recipe']
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранные'
-
-    def __str__(self):
-        return f'{self.author} : {self.recipe}'

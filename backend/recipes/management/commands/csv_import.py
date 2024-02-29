@@ -21,6 +21,12 @@ class Command(BaseCommand):
             with open('data/' + csv_file, encoding='utf-8-sig') as file:
                 rows = DictReader(file)
                 records = [model(**row) for row in rows]
+                if model.objects.exists():
+                    self.stdout.write(
+                        f'Заполнение модели {model.__name__} пропущено,'
+                        'так как таблица уже содержит записи.'
+                    )
+                    continue
                 model.objects.bulk_create(records)
 
             self.stdout.write(self.style.SUCCESS(

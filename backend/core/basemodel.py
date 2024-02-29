@@ -25,3 +25,7 @@ class AuthorRecipeModel(models.Model):
     class Meta:
 
         abstract = True
+        ordering = ['recipe']
+
+    def __str__(self):
+        return f'{self.author} : {self.recipe}'
