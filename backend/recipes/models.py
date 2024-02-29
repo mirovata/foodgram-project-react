@@ -160,7 +160,7 @@ class RecipeIngredient(models.Model):
 class Shopping_Cart(AuthorRecipeModel):
     """Модель для добавления рецепта в список покупок."""
 
-    class Meta:
+    class Meta(AuthorRecipeModel.Meta):
         default_related_name = 'shopping_list'
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Списки покупок'
@@ -169,7 +169,7 @@ class Shopping_Cart(AuthorRecipeModel):
 class Favorite(AuthorRecipeModel):
     """Модель для добавления рецепта в избранное."""
 
-    class Meta:
+    class Meta(AuthorRecipeModel.Meta):
         default_related_name = 'favorites'
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранные'
